@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 /**
  * this annotation tells Spring that this class is a component of type RestController that
  * will handle http requests
@@ -18,6 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/cashcards")
 public class CashCardController {
 
+    private final CashCardRepository cashCardRepository;
+
+    /**
+     * @TODO: Understand the different concepts of injection
+     * construction injection
+     * @param cashCardRepository
+     */
+    public CashCardController(CashCardRepository cashCardRepository) {
+        this.cashCardRepository = cashCardRepository;
+    }
+
     /**
      * annotation that marks findById as a handler method, that will handle
      * requests that match /cashcards/{requestedID}
@@ -29,11 +42,7 @@ public class CashCardController {
              */
             @PathVariable Long requestedId) {
 
-        if (requestedId.equals(99L)) {
-            CashCard cashCard = new CashCard(99L, 123.45);
-            return ResponseEntity.ok(cashCard);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Optional<CashCard> cashCard = cashCardRepository.findById(requestedId);
+        return cashCard.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

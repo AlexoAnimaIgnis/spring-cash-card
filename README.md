@@ -74,3 +74,24 @@ class CashCardController {
 }
 
 ```
+
+### Repositories and Spring Data
+
+#### Controller Repository Architecture
+
+Separation of Concerns principle state that well-designed software should be MODULAR. Common architectural
+patterns that separates the functions is called Layered Architecture.
+
+#### Spring Data's CRUD Repository
+Spring Data is responsible for the implementation of the CRUD operations during the IOC container
+startup time. This repository, upon runtime, will be exposed as another bean that we can reference whenever
+needed in the application. Here's complete implementation of CRUD operations. CrudRepository generates SQL stements
+to read and write your data.
+```java
+interface CashCardRepository extends CrudRepository<CashCard, Long> {
+}
+
+```
+
+Spring Data has many implementations for a variety of relational and non-relational database technologies, and 
+has various abstraction on top of those technologies which are commonly known as ORM (Object Relational Mapping)
