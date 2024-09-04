@@ -95,3 +95,27 @@ interface CashCardRepository extends CrudRepository<CashCard, Long> {
 
 Spring Data has many implementations for a variety of relational and non-relational database technologies, and 
 has various abstraction on top of those technologies which are commonly known as ORM (Object Relational Mapping)
+
+### Implementing POST
+
+#### Idempotence and HTTP
+
+idempotent requests are requests that can be performed multiple times but still yields the same results and
+doesn't change the internal state of the server.
+
+Idempotent methods:
+1. GET
+2. PUT
+3. DELETE
+
+Note: POST and PATCH are not idempotent.
+
+#### POST Request and Response
+
+Request
+- method: POST
+- URI
+- POST method allows body (usually JSON representation of an object)
+Response
+- HTTP 201 status code means CREATED
+- header: location of the newly created resource
