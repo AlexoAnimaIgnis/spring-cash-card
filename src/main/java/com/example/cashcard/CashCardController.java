@@ -2,7 +2,9 @@ package com.example.cashcard;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -44,7 +46,16 @@ public class CashCardController {
     }
 
     @PostMapping
-    private ResponseEntity<Void> createCashCard() {
-        return null; // Spring Web will automatically generate an HTTP Response Status code of 200 OK
+    private ResponseEntity<Void> createCashCard(
+            /**
+             * Method expects a request body or the submitted data to the API
+             */
+            @RequestBody CashCard newCashCardRequest,
+            UriComponentsBuilder uriComponentsBuilder) {
+        CashCard savedCashCard = cashCardRepository.save(newCashCardRequest);
+        URI locationOfNewCashCard = uriComponentsBuilder.path("cashcards/{id}")
+                .buildAndExpand(savedCashCard.id())
+                .toUri();
+        return ResponseEntity.created(locationOfNewCashCard).build(); // Spring Web will automatically generate an HTTP Response Status code of 200 OK
     }
 }
