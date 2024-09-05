@@ -1,5 +1,7 @@
-package com.example.cashcard;
+package com.example.cashcard.controller;
 
+import com.example.cashcard.model.CashCard;
+import com.example.cashcard.repository.CashCardRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;

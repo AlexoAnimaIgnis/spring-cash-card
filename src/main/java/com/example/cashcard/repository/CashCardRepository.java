@@ -1,5 +1,6 @@
-package com.example.cashcard;
+package com.example.cashcard.repository;
 
+import com.example.cashcard.model.CashCard;
 import org.springframework.data.repository.CrudRepository;
 
 /**
