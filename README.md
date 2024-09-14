@@ -119,3 +119,27 @@ Request
 Response
 - HTTP 201 status code means CREATED
 - header: location of the newly created resource
+- 
+### Returning List of Objects
+- crud repository has findAll method to fetch all the objects in the database
+- 
+```java
+@GetMapping()
+private ResponseEntity<Iterable<CashCard>> findAll() {
+return ResponseEntity.ok(cashCardRepository.findAll());
+}
+
+```
+
+#### Pagination and Sorting
+utilize PagingAndSortingRepository, which is a specialized version of the CrudRepository, that provides
+Paging and Sorting functionality. Pagination is used by specifying the page length and page index. Spring Data provides
+PageRequest and Sort for these functionality.
+Example:
+```java
+Page<CashCard> page2 = cashCardRepository.findAll(
+    PageRequest.of(
+        1,  // page index for the second page - indexing starts at 0
+        10, // page size (the last page might have fewer items)
+        Sort.by(new Sort.Order(Sort.Direction.DESC, "amount"))));
+```

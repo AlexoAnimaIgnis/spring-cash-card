@@ -60,4 +60,10 @@ public class CashCardController {
                 .toUri();
         return ResponseEntity.created(locationOfNewCashCard).build(); // Spring Web will automatically generate an HTTP Response Status code of 200 OK
     }
+
+    @GetMapping()
+    private ResponseEntity<Iterable<CashCard>> findAll() {
+        return ResponseEntity.ok(cashCardRepository.findAll());
+    }
+
 }
