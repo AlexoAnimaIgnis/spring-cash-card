@@ -143,3 +143,39 @@ Page<CashCard> page2 = cashCardRepository.findAll(
         10, // page size (the last page might have fewer items)
         Sort.by(new Sort.Order(Sort.Direction.DESC, "amount"))));
 ```
+###
+
+## Spring Security
+
+Introducing the authorization and authentication
+
+### Authentication
+
+Answers the question "Who are you". It is the act of the Principal (user) proving it's identity to the application.
+This is done by providing username and password (credentials). Once the credential have been presented, Principal
+is then authenticated or successfully logged in.
+
+HTTP is a stateless protocol, meaning each request must contain all the necessary information for the server to process it.
+But, presenting the credentials on every request is inefficient because it requires more processing on the server. 
+To address this, we create Authentication session when we authenticate a user. 
+
+Common Mechanisms:
+- Session Token (string of random characters) placed in a cookie. 
+- Cookie is a set of data stored in a web client and associated with a specific URI.
+-  COOKIES
+-  automatically sent to the server with every request. 
+-  cookies can persist for a certain amount of time even if the web page is closed and later re-visited
+
+
+### Spring Security and Authentication
+
+Spring Security implements authentication in the filter chain. This is a component of Java web architecture
+that allows programmer to define a sequence of methods that get called prior to the controller.
+Each filter in the chain decides whether to allow request processing to continue or not (returns 401 if request is unauthorized)
+
+#### Authorization
+
+Authorization happens after authentication and allows different useres of the same system to have different permissions.
+Spring security provides the following:
+- ROLE-BASED ACCESS CONTROL (RBAC), means that a Principal has a number of ROLES. Each resource specifies which roles a Principla
+must have in order ot perform actions with appropriate authorization.

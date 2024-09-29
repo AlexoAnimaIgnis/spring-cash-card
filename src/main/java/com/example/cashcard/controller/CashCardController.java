@@ -2,12 +2,18 @@ package com.example.cashcard.controller;
 
 import com.example.cashcard.model.CashCard;
 import com.example.cashcard.repository.CashCardRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
+
 
 /**
  * this annotation tells Spring that this class is a component of type RestController that
@@ -20,50 +26,40 @@ import java.util.Optional;
  */
 @RequestMapping("/cashcards")
 public class CashCardController {
-
     private final CashCardRepository cashCardRepository;
 
-    /**
-     * @TODO: Understand the different concepts of injection
-     * construction injection
-     * @param cashCardRepository
-     */
-    public CashCardController(CashCardRepository cashCardRepository) {
+    private CashCardController(CashCardRepository cashCardRepository) {
         this.cashCardRepository = cashCardRepository;
     }
 
-    /**
-     * annotation that marks findById as a handler method, that will handle
-     * requests that match /cashcards/{requestedID}
-     */
     @GetMapping("/{requestedId}")
-    public ResponseEntity<CashCard> findById(
-            /**
-             * PathVariable makes Spring Web aware of the requestedID supplied in the HTTP request
-             */
-            @PathVariable Long requestedId) {
-
-        Optional<CashCard> cashCard = cashCardRepository.findById(requestedId);
-        return cashCard.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    private ResponseEntity<CashCard> findById(@PathVariable Long requestedId) {
+        Optional<CashCard> cashCardOptional = cashCardRepository.findById(requestedId);
+        if (cashCardOptional.isPresent()) {
+            return ResponseEntity.ok(cashCardOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
-    private ResponseEntity<Void> createCashCard(
-            /**
-             * Method expects a request body or the submitted data to the API
-             */
-            @RequestBody CashCard newCashCardRequest,
-            UriComponentsBuilder uriComponentsBuilder) {
+    private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCardRequest, UriComponentsBuilder ucb) {
         CashCard savedCashCard = cashCardRepository.save(newCashCardRequest);
-        URI locationOfNewCashCard = uriComponentsBuilder.path("cashcards/{id}")
+        URI locationOfNewCashCard = ucb
+                .path("cashcards/{id}")
                 .buildAndExpand(savedCashCard.id())
                 .toUri();
-        return ResponseEntity.created(locationOfNewCashCard).build(); // Spring Web will automatically generate an HTTP Response Status code of 200 OK
+        return ResponseEntity.created(locationOfNewCashCard).build();
     }
 
-    @GetMapping()
-    private ResponseEntity<Iterable<CashCard>> findAll() {
-        return ResponseEntity.ok(cashCardRepository.findAll());
+    @GetMapping
+    public ResponseEntity<List<CashCard>> findAll(Pageable pageable) {
+        Page<CashCard> page = (Page<CashCard>) cashCardRepository.findAll(
+                PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))
+                ));
+        return ResponseEntity.ok(page.getContent());
     }
-
 }

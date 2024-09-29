@@ -10,29 +10,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * start Spring boot application and make it available for test
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class CashcardApplicationTests {
-
-    /**
-     * Test helper to allow us to make HTTP requests to the locally running application
-     * Note: @Autowired is a form of Spring dependency injection, it’s best used only in tests
-     */
+class CashCardApplicationTests {
     @Autowired
     TestRestTemplate restTemplate;
 
     @Test
     void shouldReturnACashCardWhenDataIsSaved() {
-        // resttemplate will make an HTTP get request, and return ResponseEntity (provides info about what happened with our Request)
         ResponseEntity<String> response = restTemplate.getForEntity("/cashcards/99", String.class);
-
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         DocumentContext documentContext = JsonPath.parse(response.getBody());
@@ -52,8 +43,9 @@ class CashcardApplicationTests {
     }
 
     @Test
+    @DirtiesContext
     void shouldCreateANewCashCard() {
-        CashCard newCashCard = new CashCard(null, 250.00);
+        CashCard newCashCard = new CashCard(null, 250.00, "sarah1");
         ResponseEntity<Void> createResponse = restTemplate.postForEntity("/cashcards", newCashCard, Void.class);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
@@ -61,7 +53,6 @@ class CashcardApplicationTests {
         ResponseEntity<String> getResponse = restTemplate.getForEntity(locationOfNewCashCard, String.class);
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        // Add assertions such as these
         DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
         Number id = documentContext.read("$.id");
         Double amount = documentContext.read("$.amount");
@@ -86,4 +77,39 @@ class CashcardApplicationTests {
         assertThat(amounts).containsExactlyInAnyOrder(123.45, 1.00, 150.00);
     }
 
+    @Test
+    void shouldReturnAPageOfCashCards() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        JSONArray page = documentContext.read("$[*]");
+        assertThat(page.size()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldReturnASortedPageOfCashCards() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        JSONArray read = documentContext.read("$[*]");
+        assertThat(read.size()).isEqualTo(1);
+
+        double amount = documentContext.read("$[0].amount");
+        assertThat(amount).isEqualTo(150.00);
+    }
+
+    @Test
+    void shouldReturnASortedPageOfCashCardsWithNoParametersAndUseDefaultValues() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        DocumentContext documentContext = JsonPath.parse(response.getBody());
+        JSONArray page = documentContext.read("$[*]");
+        assertThat(page.size()).isEqualTo(3);
+
+        JSONArray amounts = documentContext.read("$..amount");
+        assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
+    }
 }
